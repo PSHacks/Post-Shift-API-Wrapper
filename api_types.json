@@ -1,0 +1,554 @@
+{
+  "api_name": "Post-Shift.RU API",
+  "base_url": "https://post-shift.ru/api.php",
+  "description": "API для автоматизации процесса регистрации и создания временных анонимных почтовых ящиков. Все входящие письма удаляются через 10 минут после поступления.",
+  "billing_rules": {
+    "free_requests_on_reg": 100,
+    "charged_actions": [
+      "new",
+      "getlist",
+      "getmail",
+      "update"
+    ],
+    "free_actions": "Все остальные функции вызова API не списывают баланс"
+  },
+  "methods": [
+    {
+      "id": "1.1",
+      "name": "Регистрация нового пользователя",
+      "action": "reg",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=reg&email=name@domain.ru",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "reg",
+            "description": "Идентификатор действия"
+          },
+          "email": {
+            "type": "string",
+            "required": true,
+            "description": "Ваша реальная почта. Потребуется для подтверждения учетной записи"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "hash": "string"
+          },
+          "example": {
+            "hash": "d6be5cce6245b61552cdc5201e0488b2"
+          },
+          "description": "hash — хеш, необходимый для доступа к работе с сервисом"
+        }
+      }
+    },
+    {
+      "id": "1.2",
+      "name": "Подтверждение email после регистрации",
+      "action": "verify",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=verify&code=000a6a06599e6a88877337821fe61444",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "verify",
+            "description": "Идентификатор действия"
+          },
+          "code": {
+            "type": "string",
+            "required": true,
+            "description": "Код подтверждения из ссылки в полученном письме"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "verify": "string"
+          },
+          "example": {
+            "verify": "ok"
+          },
+          "description": "Сообщение об успешном подтверждении почтового ящика"
+        },
+        "error": {
+          "description": "Сообщение об ошибке в случае неверного кода"
+        }
+      }
+    },
+    {
+      "id": "1.3",
+      "name": "Получить ссылку для подтверждения email",
+      "action": "getverify",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=getverify&email=name@domain.ru",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "getverify",
+            "description": "Идентификатор действия"
+          },
+          "email": {
+            "type": "string",
+            "required": true,
+            "description": "Email пользователя, указанный при регистрации"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "send": "string"
+          },
+          "example": {
+            "send": "ok"
+          },
+          "description": "Сообщение об успешной отправке письма со ссылкой подтверждения на почту"
+        }
+      }
+    },
+    {
+      "id": "1.4",
+      "name": "Восстановить hash пользователя",
+      "action": "hash",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=hash&email=name@domain.ru",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "hash",
+            "description": "Идентификатор действия"
+          },
+          "email": {
+            "type": "string",
+            "required": true,
+            "description": "Email пользователя, указанный при регистрации"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "send": "string"
+          },
+          "example": {
+            "send": "ok"
+          },
+          "description": "Сообщение об успешной отправке письма с hash на почту"
+        }
+      }
+    },
+    {
+      "id": "2",
+      "name": "Проверка оставшихся обращений / проверка баланса",
+      "action": "balance",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=balance&hash=d6be5cce6245b61552cdc5201e0488b2",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "balance",
+            "description": "Идентификатор действия"
+          },
+          "hash": {
+            "type": "string",
+            "required": true,
+            "description": "Полученный хеш при регистрации пользователя"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "limit": "integer"
+          },
+          "example": {
+            "limit": 100
+          },
+          "description": "limit — число доступных платных обращений к функциям API"
+        }
+      }
+    },
+    {
+      "id": "3",
+      "name": "Создание нового ящика",
+      "action": "new",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=new&hash=d6be5cce6245b61552cdc5201e0488b2&name=ghfdh5rhd4",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "new",
+            "description": "Идентификатор действия. Списывает 1 обращение с баланса"
+          },
+          "hash": {
+            "type": "string",
+            "required": true,
+            "description": "Полученный хеш при регистрации"
+          },
+          "name": {
+            "type": "string",
+            "required": false,
+            "description": "Желаемое имя почты (до 10 символов, более длинные будут обрезаны). При указании параметра время жизни ящика составит 1 час вместо 10 минут. Нельзя использовать слова-исключения (admin, director, manager и т.д.)"
+          },
+          "domain": {
+            "type": "string",
+            "required": false,
+            "description": "Выбор домена самостоятельно. Доступные значения: 'post-shift.ru' or 'postshift.ru'. Если не указан, домен выбирается случайно"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "email": "string",
+            "key": "string"
+          },
+          "example": {
+            "email": "bjlokwva72@post-shift.ru",
+            "key": "faf3f53538d0b5a52222ad7ef5040068"
+          },
+          "description": "email — созданный адрес, key — уникальный ключ для дальнейшего доступа к этому ящику"
+        }
+      }
+    },
+    {
+      "id": "4",
+      "name": "Получение списка писем",
+      "action": "getlist",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=getlist&hash=d6be5cce6245b61552cdc5201e0488b2&key=faf3f53538d0b5a52222ad7ef5040068",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "getlist",
+            "description": "Идентификатор действия. Списывает 1 обращение с баланса"
+          },
+          "hash": {
+            "type": "string",
+            "required": true,
+            "description": "Полученный хеш при регистрации"
+          },
+          "key": {
+            "type": "string",
+            "required": true,
+            "description": "Ключ доступа к конкретному почтовому ящику"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "type": "array",
+          "structure": [
+            {
+              "id": "integer",
+              "date": "string",
+              "subject": "string",
+              "from": "string"
+            }
+          ],
+          "example": [
+            {
+              "id": 1,
+              "date": "Thu, 09 Mar 2017 11:06:11 +0300",
+              "subject": " Подтверждение регистрации в ICQ?",
+              "from": "noreply@icq.com"
+            }
+          ],
+          "description": "Список писем в ящике. id — номер письма, date — дата, subject — тема, from — отправитель"
+        }
+      }
+    },
+    {
+      "id": "5",
+      "name": "Получение текста письма",
+      "action": "getmail",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=getmail&hash=d6be5cce6245b61552cdc5201e0488b2&key=faf3f53538d0b5a52222ad7ef5040068&id=1",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "getmail",
+            "description": "Идентификатор действия. Списывает 1 обращение с баланса"
+          },
+          "hash": {
+            "type": "string",
+            "required": true,
+            "description": "Полученный хеш при регистрации"
+          },
+          "key": {
+            "type": "string",
+            "required": true,
+            "description": "Ключ доступа к конкретному почтовому ящику"
+          },
+          "id": {
+            "type": "integer",
+            "required": true,
+            "description": "Номер письма в ящике (полученный из getlist)"
+          },
+          "cut": {
+            "type": "string",
+            "required": false,
+            "value": "html",
+            "description": "Если равен 'html', из письма будут вырезаны все HTML теги, кроме ссылок"
+          },
+          "base64": {
+            "type": "string",
+            "required": false,
+            "value": "decode",
+            "description": "Если равен 'decode', письмо будет автоматически раскодировано, если пришло в виде набора символов"
+          },
+          "forced": {
+            "type": "integer",
+            "required": false,
+            "value": 1,
+            "description": "Если равен 1, письмо вернется в исходном сыром виде без постобработок. Исправляет ошибку 'Letter not found.', если в getlist письмо отображается, а в getmail выдает ошибку"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "message": "string"
+          },
+          "example": {
+            "message": "test"
+          },
+          "description": "message — содержание письма с указанным id"
+        }
+      }
+    },
+    {
+      "id": "6",
+      "name": "Узнать оставшееся время жизни email'а",
+      "action": "livetime",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=livetime&key=faf3f53538d0b5a52222ad7ef5040068",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "livetime",
+            "description": "Идентификатор действия"
+          },
+          "key": {
+            "type": "string",
+            "required": true,
+            "description": "Ключ доступа к почтовому ящику"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "livetime": "string"
+          },
+          "example": {
+            "livetime": "479"
+          },
+          "description": "Время жизни email в секундах"
+        },
+        "error": {
+          "structure": {
+            "error": "string"
+          },
+          "example": {
+            "error": "key_not_found"
+          },
+          "description": "Текст ошибки, если ящика не существует или ключ неверный"
+        }
+      }
+    },
+    {
+      "id": "7",
+      "name": "Продлить время жизни до 10 минут",
+      "action": "update",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=update&hash=d6be5cce6245b61552cdc5201e0488b2&key=faf3f53538d0b5a52222ad7ef5040068",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "update",
+            "description": "Идентификатор действия. Списывает 1 обращение с баланса. Функция сбрасывает (возвращает) таймер к отметке 10 минут (600 секунд), а не прибавляет время. Внимание: если ящик был создан с параметром name на 1 час, вызов этой функции сбросит его время жизни до 10 минут, если у него оставалось более 10 минут!"
+          },
+          "hash": {
+            "type": "string",
+            "required": true,
+            "description": "Полученный хеш при регистрации"
+          },
+          "key": {
+            "type": "string",
+            "required": true,
+            "description": "Ключ доступа к почтовому ящику"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "livetime": "string"
+          },
+          "example": {
+            "livetime": "600"
+          },
+          "description": "Новое установленное время жизни email в секундах. Возвращает сообщение об ошибке, если ящика не существует"
+        }
+      }
+    },
+    {
+      "id": "8",
+      "name": "Удалить использованный email",
+      "action": "delete",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=delete&key=faf3f53538d0b5a52222ad7ef5040068",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "delete",
+            "description": "Идентификатор действия"
+          },
+          "key": {
+            "type": "string",
+            "required": true,
+            "description": "Ключ доступа к удаляемому ящику"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "delete": "string"
+          },
+          "example": {
+            "delete": "ok"
+          },
+          "description": "Сообщение об успешном удалении ящика"
+        }
+      }
+    },
+    {
+      "id": "9",
+      "name": "Очистить email",
+      "action": "clear",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=clear&key=faf3f53538d0b5a52222ad7ef5040068",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "clear",
+            "description": "Идентификатор действия"
+          },
+          "key": {
+            "type": "string",
+            "required": true,
+            "description": "Ключ доступа к очищаемому ящику"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "clear": "string"
+          },
+          "example": {
+            "clear": "ok"
+          },
+          "description": "Сообщение об успешной очистке писем в ящике"
+        }
+      }
+    },
+    {
+      "id": "10",
+      "name": "Получить список активных ключей от ящиков",
+      "action": "getkeys",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=getkeys&hash=faf3f53538d0b5a52222ad7ef5040068",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "getkeys",
+            "description": "Идентификатор действия"
+          },
+          "hash": {
+            "type": "string",
+            "required": true,
+            "description": "Хеш пользователя, полученный при регистрации"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "type": "array",
+          "structure": [
+            {
+              "key": "string",
+              "mail": "string"
+            }
+          ],
+          "example": [
+            {
+              "key": "faf3f53538d0b5a52222ad7ef5040068",
+              "mail": "bjlokwva72@post-shift.ru"
+            }
+          ],
+          "description": "Список активных ключей. key — ключ email'а, mail — сам адрес почтового ящика. В случае отсутствия ключей возвращает сообщение о том, что активных ключей не найдено"
+        }
+      }
+    },
+    {
+      "id": "11",
+      "name": "Удалить все активные emails по IP",
+      "action": "deleteall",
+      "request": {
+        "method": "GET",
+        "example_url": "https://post-shift.ru/api.php?action=deleteall",
+        "parameters": {
+          "action": {
+            "type": "string",
+            "required": true,
+            "value": "deleteall",
+            "description": "Идентификатор действия"
+          }
+        }
+      },
+      "responses": {
+        "success": {
+          "structure": {
+            "delete": "string"
+          },
+          "example": {
+            "delete": "ok"
+          },
+          "description": "Сообщение об успешном удалении всех ящиков, привязанных к текущему IP адресу"
+        }
+      }
+    }
+  ]
+}
